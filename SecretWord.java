@@ -1,3 +1,6 @@
+import java.util.Set;
+import java.util.HashSet;
+
 public class SecretWord extends Challenge {
 
     public SecretWord(String challengeText, String hint, int level) {
@@ -6,14 +9,23 @@ public class SecretWord extends Challenge {
     
     @Override
     public int getMaxAttempts() {
-        if (level == 1) 
-        {
-            return 10;
-        } else if (level == 2) {
-            return 6;
-        } else {
-            return 3;
+        Set<Character> uniqueLetters = new HashSet<>();
+        for (char c : this.challengeText.toCharArray()) {
+            if (Character.isLetter(c)) { 
+                uniqueLetters.add(c);
+            }
         }
+        
+        int allowedMisses;
+        if (level == 1) {
+            allowedMisses = 7; 
+        } else if (level == 2) {
+            allowedMisses = 5; 
+        } else {
+            allowedMisses = 3; 
+        }
+        
+        return uniqueLetters.size() + allowedMisses;
     }
 
     @Override

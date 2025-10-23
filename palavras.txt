@@ -1,0 +1,26 @@
+# Lembrete do Formato: TIPO|NIVEL|PALAVRA_SECRETA|DICA
+# TIPO: WORD ou PHRASE
+# NIVEL: 1 (fácil), 2 (médio), 3 (difícil)
+# Todos os acentos são removidos e o texto está em MAIÚSCULAS.
+
+# --- NÍVEL 1 (FÁCIL) ---
+WORD|1|GATO|Animal domestico que mia
+WORD|1|SOL|Estrela no centro do sistema solar
+WORD|1|CASA|Lugar onde se mora
+WORD|1|JAVA|Linguagem de programacao deste projeto
+PHRASE|1|CAFE COM LEITE|Bebida popular de manha
+PHRASE|1|ARQUIVO TEXTO|Onde estas palavras estao
+
+# --- NÍVEL 2 (MÉDIO) ---
+WORD|2|COMPUTADOR|Maquina que processa dados
+WORD|2|TECLADO|Usado para digitar no PC
+WORD|2|HERANCA|Um pilar da Orientacao a Objetos
+PHRASE|2|COPA DO MUNDO|Torneio global de futebol
+PHRASE|2|JOGO DA FORCA|Um jogo similar a este
+
+# --- NÍVEL 3 (DIFÍCIL) ---
+WORD|3|PARALELEPIPEDO|Forma geometrica de seis faces
+WORD|3|POLIMORFISMO|Muitas formas, um pilar do POO
+WORD|3|CRIPTOGRAFIA|Tecnica para codificar mensagens
+PHRASE|3|INTELIGENCIA ARTIFICIAL|Simulacao da cognicao humana
+PHRASE|3|BUGS EM CODIGO|O que o programador odeia

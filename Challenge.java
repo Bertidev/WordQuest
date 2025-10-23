@@ -17,6 +17,10 @@ public abstract class Challenge {
         return this.hint;
     }
 
+    public int getLevel() {
+        return this.level;
+    }
+
     public abstract int getMaxAttempts();
 
     public abstract int getMaxTimeInSeconds();

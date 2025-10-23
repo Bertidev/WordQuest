@@ -15,9 +15,17 @@ public class DataAccess {
                 if (line.isBlank() || line.startsWith("#")) {
                     continue; 
                 }   
+                String[] parts = line.split("\\|");
+                int level = Integer.parseInt(parts[1]);
+                if(parts[0].equals("WORD")) {
+                    challenges.add(new SecretWord(parts[2], parts[3], level));
+                } else if (parts[0].equals("PHRASE")) {
+                    challenges.add(new SecretPhrase(parts[2], parts[3], level));
+                }
             }
         } catch (IOException e) {
         e.printStackTrace(); 
         }   
+        return challenges;
     }
 }
