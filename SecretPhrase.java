@@ -1,12 +1,16 @@
+//subclasse que herda de Challenge, serve para desafio de frase
+
 import java.util.Set;
 import java.util.HashSet;
 
 public class SecretPhrase extends Challenge{
     
+    //usa o construtor da superclasse
     public SecretPhrase(String challengeText, String hint, int level) {
         super(challengeText, hint, level);
     }
 
+    //especificando o numero maximo de tentativas, fazendo sobrescrita da classe pai, ou seja polimorfismo
     @Override
     public int getMaxAttempts() {
         Set<Character> uniqueLetters = new HashSet<>();
@@ -15,7 +19,8 @@ public class SecretPhrase extends Challenge{
                 uniqueLetters.add(c);
             }
         }
-        
+        //o numero maximo de tentativas depende da quantidade de letras unicas 
+        //esse valor é somado com um fator fixo de acordo coma  dificuldade
         int allowedMisses;
         if (level == 1) {
             allowedMisses = 9; 
@@ -30,6 +35,7 @@ public class SecretPhrase extends Challenge{
 
     @Override
     public int getMaxTimeInSeconds() {
+        //o tempo limite é definido de acordo com a dificuldade
         if (level == 1) {
             return 100;
         } else if (level == 2) {
@@ -41,6 +47,7 @@ public class SecretPhrase extends Challenge{
 
     @Override
     public int getInitialVisibleChars() {
+        //o numero de letras unicas disponiveis no começo do jogo é fixo
         return 2;
     }
 }

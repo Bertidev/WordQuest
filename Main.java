@@ -4,19 +4,23 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.ArrayList;
 
+
+//classe para efetivamente jogar
 public class Main {
 
     public static void main(String[] args) throws IOException {
         
-        DataAccess dataAccess = new DataAccess();
-        GameManager gameManager = new GameManager();
-        Random random = new Random();
-        Scanner scanner = new Scanner(System.in); 
+        DataAccess dataAccess = new DataAccess();       //le o arquivo palavras.txt
+        GameManager gameManager = new GameManager();    //cria o controlador do jogo
+        Random random = new Random();                   //randomizaor
+        Scanner scanner = new Scanner(System.in);       //leitura do input do usuario
         
         System.out.println("Carregando desafios...");
         
+        //carrega todos os desafios
         List<Challenge> allChallenges = dataAccess.loadChallengesFromFile("palavras.txt");
         
+        //controlador para jogar varias vezes
         boolean wantsToPlay = true; 
         
         while (wantsToPlay) { 
@@ -24,6 +28,7 @@ public class Main {
             int chosenLevel = 0;
             List<Challenge> filteredChallenges = new ArrayList<>(); 
 
+            //deixa o usuario escolher a dificuldade
             while (filteredChallenges.isEmpty()) {
                 System.out.println("\nEscolha o nível de dificuldade:");
                 System.out.println("1 - Fácil");
@@ -36,11 +41,13 @@ public class Main {
                 try {
                     chosenLevel = Integer.parseInt(levelInput);
                     if (chosenLevel >= 1 && chosenLevel <= 3) {
+                        //se a escolha de dificuldade do usuario é valida filtra pela dificuldade
                         for (Challenge c : allChallenges) {
                             if (c.getLevel() == chosenLevel) {
                                 filteredChallenges.add(c);
                             }
                         }
+                        //verificacao de que existe desafio na dificuldade escolhida
                         if (filteredChallenges.isEmpty()) {
                             System.out.println("Desculpe, não há palavras cadastradas para o nível " + chosenLevel);
                         }
@@ -52,9 +59,11 @@ public class Main {
                 }
             }
             
+            //escolhe um desafio aleatorio da dificuldade escolhida
             int randomIndex = random.nextInt(filteredChallenges.size());
             Challenge chosenChallenge = filteredChallenges.get(randomIndex);
             
+            //inicia o jogo
             gameManager.startGame(chosenChallenge);
             
             System.out.println("\n--- Jogo Iniciado! Nível " + chosenLevel + " ---");
@@ -65,6 +74,7 @@ public class Main {
 
             while (gameState.equals("PLAYING")) {
                 
+                //mostra a palavra do jeito que esta no momento
                 System.out.println("\n------------------------------------");
                 System.out.println("Palavra: " + gameManager.getDisplayedWord());
                 
@@ -74,6 +84,7 @@ public class Main {
                     System.out.println("Dica: (Digite 'DICA' para revelar)");
                 }
                 
+                //informacoes do estado do jogo
                 System.out.println("Tentativas Restantes: " + gameManager.getRemainingAttempts());
                 System.out.println("Tempo Restante: " + gameManager.getRemainingTimeInSeconds() + "s");
                 System.out.println("Pontos: " + gameManager.getScore());
@@ -82,6 +93,7 @@ public class Main {
                 System.out.print("\nDigite uma letra (ou 'DICA'): ");
                 String input = scanner.nextLine();
 
+                //opcao do usuario pedir dica
                 if (input.equalsIgnoreCase("DICA")) {
                     if (showHint) {
                         System.out.println(">>> A dica já está sendo mostrada. <<<");
@@ -92,6 +104,7 @@ public class Main {
                     continue; 
                 }
 
+                //verifica se o usuario esta colocando uma letra
                 if (input.isEmpty() || !Character.isLetter(input.charAt(0))) {
                     System.out.println("Input inválido. Por favor, digite apenas uma letra.");
                     continue; 
