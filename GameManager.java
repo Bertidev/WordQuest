@@ -1,55 +1,53 @@
+// gerencia o estado do jogo: inicia rodada, processa palpites, pontuacao e verificacoes de vitoria/derrota
+
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Random;
 
-//calcula a pontuacao, tempoe verifica vitoria/derrota
-
 public class GameManager {
 
-    //ATRIBUTOS
+    // ATRIBUTOS
 
-    private Challenge currentChallenge;
+    private Challenge currentChallenge;      // desafio atual (palavra ou frase)
 
-    //uso stringbuilder para modificar a string eficientemente, sem alocar nova memoria a cada alteracao
-    //ao tentar alterar uma string, o java cria uma string nova com a alteracao, e depois junta as duas numa terceira 
-    //string nova e deleta as duas primeiras, o que é muito ineficiente
-    private StringBuilder displayedWord;
+    // armazena versao parcialmente revelada da palavra/frase
+    // é um string builder porque strings em java sao imutaveis
+    // entao cada mudanca criaria um novo objeto
+    // o jogo precisa modificar muitas posicoes 
+    // o StringBuilder permite alterar caracteres diretamente sem recriar a string
+    private StringBuilder displayedWord;     // versao "criptografada" mostrada ao jogador
 
-    //usando o set porque ele nao permite duplicatas de maneira automatizada
-    //armazena as tentativas de letras do usuario
-    private Set<Character> guessedLetters;
+    private Set<Character> guessedLetters;   // letras ja tentadas pelo jogador (sem duplicatas)
+    private int score;                       // pontuacao atual
+    private int hits;                        // acertos (letras corretas encontradas)
+    private int errors;                      // erros (letras incorretas)
+    private int remainingAttempts;           // tentativas restantes
 
-    private int score;
-    private int hits;
-    private int errors;
-    private int remainingAttempts;
+    // controle de tempo
+    private long startTimeMillis;            // quando a rodada começou (ms)
+    private int maxTimeInSeconds;            // tempo maximo permitido (segundos)
 
-    //controle de tempo
-    private long startTimeMillis; //guarda o momento que o jogo começou
-    private int maxTimeInSeconds;
-
-    //prepara e inicia uma rodada
+    // PREPARA E INICIA UMA RODADA
     public void startGame(Challenge challenge) {
 
-        //zera o placar e salva o desafio.
+        // zera estado e guarda o desafio
         this.currentChallenge = challenge;
         this.score = 0;
         this.hits = 0;
         this.errors = 0;
 
-        //polimorfismo, java decide o tempo entre Word ou Phrase dependendo do objeto
+        // usa polimorfismo para obter regras dependendo do tipo do desafio
         this.remainingAttempts = this.currentChallenge.getMaxAttempts();
         this.maxTimeInSeconds = this.currentChallenge.getMaxTimeInSeconds();
 
-        //inicia o cronometro
+        // inicia cronometro e estruturas de apoio
         this.startTimeMillis = System.currentTimeMillis();
         this.guessedLetters = new HashSet<>();
         this.displayedWord = new StringBuilder();
 
-        //constroi a palavra "criptografada"
+        // constroi a versao inicial (substitui letras por '_', preserva espaços)
         String secretText = this.currentChallenge.getChallengeText();
         for (int i = 0; i < secretText.length(); i++) {
-            //se for espaco deixa espaco, se for letra substitui por _ 
             if (secretText.charAt(i) == ' ') {
                 displayedWord.append(' ');
             } else {
@@ -57,94 +55,87 @@ public class GameManager {
             }
         }
 
-        //regra para revelar letras iniciais
+        // revela algumas letras iniciais conforme regra do desafio
         int lettersToReveal = this.currentChallenge.getInitialVisibleChars();
         Random random = new Random();
         int revealedCount = 0;
 
-        //set temporario para ter certeza de que a mesma letra nao sera sorteada mais de uma vez
+        // evita revelar a mesma letra mais de uma vez nesse sorteio inicial
         Set<Character> lettersAlreadyPicked = new HashSet<>();
 
         while (revealedCount < lettersToReveal) {
             int randomIndex = random.nextInt(secretText.length());
             char charToReveal = secretText.charAt(randomIndex);
 
-            //verifica se o input é uma letra e se nao foi utilizada
+            // so revela se for letra e ainda não foi escolhida
             if (Character.isLetter(charToReveal) && !lettersAlreadyPicked.contains(charToReveal)) {
                 revealedCount++;
                 lettersAlreadyPicked.add(charToReveal);
 
-                //revela todas as ocorrencias da letra na palavra
+                // revela todas as ocorrencias da letra
                 for (int i = 0; i < secretText.length(); i++) {
                     if (secretText.charAt(i) == charToReveal) {
                         displayedWord.setCharAt(i, charToReveal);
                     }
                 }
 
-                //adiciona o caracter aos ja tentados para nao ter repeticao
+                // marca como ja tentada para evitar duplicacao
                 this.guessedLetters.add(charToReveal);
             }
         }
     }
 
-    //processa a jogada do usuario, retorna true se for valida e false se nao
+    // PROCESSA UM PALPITE DO USUARIO (letra)
+    // retorna false se a letra ja foi tentada (palpite invalido)
     public boolean guessLetter(char letter) {
-        //se a letra ja foi tentada retorna
         if (guessedLetters.contains(letter)) {
             return false;
         }
 
-        //salva a nova tentativa
+        // registra a tentativa
         this.guessedLetters.add(letter);
         String secretText = this.currentChallenge.getChallengeText();
 
-        //verifica se é erro ou acerto
+        // verifica se a letra esta no texto secreto
         if (secretText.indexOf(letter) == -1) {
-            //erro perde pontos e aumenta contador de erros
+            // letra nao encontrada -> penaliza
             this.score -= 5;
             this.errors++;
         } else {
-            //acerto conta o hit
+            // letra encontrada -> revela todas as ocorrencias e pontua
             this.hits++;
-            //percorre a palavra para revelar a letra em TODAS as posições que ela aparece
             for (int i = 0; i < secretText.length(); i++) {
                 if (secretText.charAt(i) == letter) {
                     this.displayedWord.setCharAt(i, letter);
-                    this.score += 10; //ganha pontos por cada letra revelada
+                    this.score += 10; // pontos por cada letra revelada
                 }
             }
         }
 
-        //Toda jogada consome uma tentativa
+        // cada palpite consome uma tentativa
         this.remainingAttempts--;
         return true;
     }
 
-    //verifica o estado do jogo
+    // VERIFICA O ESTADO ATUAL DO JOGO
+    // retorna "WIN", "LOSE_ATTEMPTS", "LOSE_TIME" ou "PLAYING"
     public String checkGameState() {
-        //calcula quanto tempo passou
         long elapsedTimeMillis = System.currentTimeMillis() - this.startTimeMillis;
-        long maxTimeMillis = this.maxTimeInSeconds * 1000L; //converte segundo para ms
+        long maxTimeMillis = this.maxTimeInSeconds * 1000L; // converte segundos para ms
 
-        // Ordem de verificação é importante:
-        //se nao tem mais _ o jogador ganhou e retorna vitoria
+        // ordem importa: primeiro verifica vitoria (nenhum '_'), depois derrotas
         if (!displayedWord.toString().contains("_")) {
             return "WIN";
-        }
-        //derrota por tentativas
-        else if (remainingAttempts == 0) {
+        } else if (remainingAttempts == 0) {
             return "LOSE_ATTEMPTS";
-        }
-        //derrota por tempo
-        else if (elapsedTimeMillis >= maxTimeMillis) {
+        } else if (elapsedTimeMillis >= maxTimeMillis) {
             return "LOSE_TIME";
         }
 
-        //se nada disso aconteceu continua
         return "PLAYING";
     }
 
-    //GETTERS
+    // GETTERS simples para UI e lógica externa
 
     public String getDisplayedWord() {
         return this.displayedWord.toString();
@@ -174,13 +165,11 @@ public class GameManager {
         return this.errors;
     }
 
-    //calcula o tempo restante para mostrar na tela
+    // calcula tempo restante em segundos (garante nao negativo)
     public long getRemainingTimeInSeconds() {
         long elapsedTimeMillis = System.currentTimeMillis() - this.startTimeMillis;
         long maxTimeMillis = this.maxTimeInSeconds * 1000L;
         long remainingMillis = maxTimeMillis - elapsedTimeMillis;
-
-        //usando o maximo garante que nao vai mostrar tempo negativo
         return Math.max(0, remainingMillis / 1000);
     }
 }
